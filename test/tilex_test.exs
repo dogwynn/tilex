@@ -1,5 +1,6 @@
 defmodule TilexTest do
   use ExUnit.Case
+  require Logger
   doctest Tilex
 
   setup_all do
@@ -186,6 +187,7 @@ defmodule TilexTest do
         height: 25,
         rotation: 15
       },
+
       %{
         id: 2,
         name: "polygon 1",
@@ -199,23 +201,119 @@ defmodule TilexTest do
           {25.75, 39.75},
           {-9, 37.75}
         ]
+      },
+
+      %{
+        id: 3,
+        name: "elipse 1",
+        type: "elipse type",
+        center: {198.75, 102.5},
+        width: 17.75,
+        height: 14.25
+      },
+
+      %{
+        id: 4,
+        name: "point 1",
+        type: "point type",
+        point: {174.25, 186},
+      },
+
+      %{
+        id: 7,
+        name: "insert text 1",
+        type: "insert text type",
+        x: 11.3958,
+        y: 48.5833,
+        width: 107.625,
+        height: 27.25,
+        fontfamily: "Sans Serif",
+        pixelsize: 17,
+        wrap: 1,
+        color: {255, 180, 3, 3},
+        italic: 1,
+        underline: 1,
+        strikeout: 1,
+        text: "Hello World"
+      },
+
+      %{
+        id: 6,
+        name: "inserted tile 1",
+        type: "inserted tile type",
+        gid: %Tilex.Gid{d_flip: false, gid: 31, h_flip: true, v_flip: true},
+        x: 47.25,
+        y: 72.5,
+        width: 47,
+        height: 53,
+        rotation: 31
+      },
+
+      %{
+        id: 8,
+        name: "polyline 1",
+        type: "polyline type",
+        origin: {144.667, 112},
+        points: [{0, 0}, {-14.3333, 35.6667}, {15.3333, 18.3333}]
+      },
+
+      %{
+        id: 9,
+        name: "polygon 2",
+        type: "polygon type",
+        origin: {69.8333, 168.333},
+        points: [{-3.25, -17.25}, {-15, 10.75}, {20.75, 4.5}]
       }
     ]
 
     Enum.zip(Enum.take(objects, Enum.count(attributes)), attributes)
-    |> Enum.map(fn o, a ->
+    |> Enum.map(fn {o, a} ->
       a
       |> Enum.map(fn {k, v} ->
-        Logger.error(inspect(o))
+        # Logger.error(inspect(o))
         assert Map.get(o, k) == v
       end)
     end)
   end
 
-  test "loads map infinite", state do
+  test "loads test_map_infinite.tmx", state do
     path = state[:test_map_infinite]
     tmx = Tilex.parse_tmx!(path)
     assert tmx
+  end
+
+  test "test_map_infinite.tmx map attributes correct", state do
+    path = state[:test_map_infinite]
+    tmx = Tilex.parse_tmx!(path)
+
+    assert tmx.version == "1.2"
+    assert tmx.tiledversion == "1.2.3"
+    assert tmx.orientation == "orthogonal"
+    assert tmx.renderorder == "right-down"
+    assert tmx.width == 8
+    assert tmx.height == 6
+    assert tmx.tilewidth == 32
+    assert tmx.tileheight == 32
+    assert tmx.infinite == 1
+    assert tmx.nextlayerid == 3
+    assert tmx.nextobjectid == 1
+
+  end
+
+  test "test_map_infinite.tmx map tileset count correct", state do
+    path = state[:test_map_infinite]
+    tmx = Tilex.parse_tmx!(path)
+
+    assert Enum.count(tmx.tilesets) == 1
+
+  end
+
+  test "test_map_infinite.tmx map layer count correct", state do
+    path = state[:test_map_infinite]
+    tmx = Tilex.parse_tmx!(path)
+
+    assert Enum.count(tmx.layers) == 2
+
   end
 
   test "loads map simple", state do

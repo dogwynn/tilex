@@ -125,6 +125,7 @@ defmodule Tilex.Map do
 
   def from_map(map) do
     Tilex.Element.struct(Tilex.Map, map)
+    |> Tilex.Color.convert_colors([:backgroundcolor])
   end
 
   def load_tileset(%Tilex.Map{tilesets: tilesets, path: path}, tile_index) do
@@ -175,6 +176,12 @@ defmodule Tilex.Color do
              is_integer(b) ->
         {:ok, {a, r, g, b}}
 
+      "" ->
+        {:ok, nil}
+
+      nil ->
+        {:ok, nil}
+
       string when is_binary(string) ->
         match =
           @color_re
@@ -194,9 +201,21 @@ defmodule Tilex.Color do
           {:error, {:bad_color_binary, string}}
         end
 
-      nil ->
-        nil
     end
+  end
+
+  def convert_colors(struct, atoms) do
+    Map.merge(
+      struct,
+      atoms
+      |> Enum.map(fn atom ->
+        case parse(Map.get(struct, atom)) do
+          {:ok, color} -> {atom, color}
+          _ -> {atom, Map.get(struct, atom)}
+        end
+      end)
+      |> Enum.into(%{})
+    )
   end
 end
 
@@ -280,15 +299,8 @@ defmodule Tilex.ObjectGroup do
   ]
 
   def from_map(map) do
-    group = Tilex.Element.struct(Tilex.ObjectGroup, map)
-
-    color =
-      case Tilex.Color.parse(group.color) do
-        {:ok, color} -> color
-        _ -> group.color
-      end
-
-    Map.put(group, :color, color)
+    Tilex.Element.struct(Tilex.ObjectGroup, map)
+    |> Tilex.Color.convert_colors([:color, :tintcolor])
   end
 end
 
@@ -576,6 +588,8 @@ defmodule Tilex.Text do
       valign: valign,
       text: List.to_string(text)
     }
+    |> Tilex.Color.convert_colors([:color])
+    
   end
 end
 
@@ -719,6 +733,7 @@ defmodule Tilex.Layer do
 
   def from_map(layer_map) do
     Tilex.Element.struct(Tilex.Layer, layer_map)
+    |> Tilex.Color.convert_colors([:tintcolor])
   end
 
   def gids(%Tilex.Layer{
@@ -803,6 +818,7 @@ defmodule Tilex.Group do
 
   def from_map(map) do
     Tilex.Element.struct(Tilex.Group, map)
+    |> Tilex.Color.convert_colors([:tintcolor])
   end
 end
 
