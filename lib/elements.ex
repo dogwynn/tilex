@@ -865,13 +865,14 @@ defmodule Tilex.Gid do
      |> from_bitstring()}
   end
 
-  def parse_gids(%{compression: "zstd", raw: raw, encoding: "base64"}) do
-    {:ok,
-     raw
-     |> :base64.decode()
-     |> :zstd.decompress()
-     |> from_bitstring()}
-  end
+  # Problems with compiling zstd lib on OTP 23 (-l erl_interface.so)  
+  # def parse_gids(%{compression: "zstd", raw: raw, encoding: "base64"}) do
+  #   {:ok,
+  #    raw
+  #    |> :base64.decode()
+  #    |> :zstd.decompress()
+  #    |> from_bitstring()}
+  # end
 
   def parse_gids(%{raw: raw, encoding: "csv"}) do
     {:ok,
